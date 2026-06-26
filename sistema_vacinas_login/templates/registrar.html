@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-sm-12">
+        <div class="card shadow-sm border-0 rounded-4 mt-3">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-primary">Criar Conta</h3>
+                    <p class="text-muted small">Crie a sua Carteira Digital de Saúde</p>
+                </div>
+                
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nome Completo</label>
+                        <input class="form-control form-control-lg rounded-3" name="nome" placeholder="Ex: Janilson Silva" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">CPF</label>
+                            <input class="form-control rounded-3" name="cpf" placeholder="000.000.000-00">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Data de Nascimento</label>
+                            <input class="form-control rounded-3" type="date" name="nascimento">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Telemóvel / Telefone</label>
+                        <input class="form-control rounded-3" name="telefone" placeholder="(00) 00000-0000">
+                    </div>
+
+                    <hr class="text-muted my-4">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nome de Utilizador (Login)</label>
+                        <input class="form-control rounded-3" name="usuario" placeholder="Escolha um nome de utilizador" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Senha</label>
+                        <input class="form-control form-control-lg rounded-3" type="password" name="senha" placeholder="Crie uma senha segura" required>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-lg w-100 rounded-3 shadow-sm mb-3">Concluir Registo</button>
+                </form>
+                
+                <div class="text-center">
+                    <a href="/login" class="text-decoration-none small">Já tem uma conta? Entrar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
