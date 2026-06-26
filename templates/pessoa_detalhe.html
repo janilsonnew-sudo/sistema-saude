@@ -1,1 +1,141 @@
-{% extends "base.html" %}{% block content %}<a href="/pessoas">← Voltar</a><h2 class="mt-2">{{pessoa.nome}}</h2><p class="text-muted">CPF: {{pessoa.cpf or '-'}} | Nascimento: {{pessoa.nascimento or '-'}} | Telefone: {{pessoa.telefone or '-'}}</p><div class="row g-3"><div class="col-lg-6"><div class="card"><div class="card-body"><h4>Registrar vacina</h4><form method="post" action="/pessoa/{{pessoa.id}}/vacina"><select class="form-select mb-2" name="vacina_id" required><option value="">Selecione</option>{% for v in vacinas %}<option value="{{v.id}}">{{v.nome}}</option>{% endfor %}</select><input class="form-control mb-2" name="dose" placeholder="Dose (ex.: 1ª dose)" required><input class="form-control mb-2" type="date" name="data_aplicacao" value="{{hoje}}" required><input class="form-control mb-2" name="lote" placeholder="Lote"><textarea class="form-control mb-2" name="observacao" placeholder="Observação"></textarea><button class="btn btn-primary">Registrar</button></form></div></div></div><div class="col-lg-6"><div class="card"><div class="card-body"><h4>Registrar medicação</h4><form method="post" action="/pessoa/{{pessoa.id}}/medicacao"><select class="form-select mb-2" name="medicamento_id" required><option value="">Selecione</option>{% for m in medicamentos %}<option value="{{m.id}}">{{m.nome}} {{m.apresentacao or ''}}</option>{% endfor %}</select><label>Início</label><input class="form-control mb-2" type="date" name="data_inicio"><label>Fim (opcional)</label><input class="form-control mb-2" type="date" name="data_fim"><input class="form-control mb-2" name="posologia" placeholder="Posologia"><textarea class="form-control mb-2" name="observacao" placeholder="Observação"></textarea><button class="btn btn-success">Registrar</button></form></div></div></div></div><div class="row mt-3"><div class="col-lg-6"><h4>Histórico de vacinas</h4><table class="table bg-white"><tr><th>Vacina</th><th>Dose</th><th>Data</th><th>Lote</th></tr>{% for a in aplicacoes %}<tr><td>{{a.vacina}}</td><td>{{a.dose}}</td><td>{{a.data_aplicacao}}</td><td>{{a.lote or ''}}</td></tr>{% else %}<tr><td colspan="4">Sem registros.</td></tr>{% endfor %}</table></div><div class="col-lg-6"><h4>Histórico de medicações</h4><table class="table bg-white"><tr><th>Medicamento</th><th>Posologia</th><th>Período</th></tr>{% for m in medicacoes %}<tr><td>{{m.medicamento}} {{m.apresentacao or ''}}</td><td>{{m.posologia or ''}}</td><td>{{m.data_inicio or ''}} — {{m.data_fim or 'uso contínuo'}}</td></tr>{% else %}<tr><td colspan="3">Sem registros.</td></tr>{% endfor %}</table></div></div>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mb-3">
+    <a href="/minha-area" class="text-decoration-none text-secondary small fw-semibold">
+        ← Voltar para Minha Área
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-sm-12">
+        
+        <div class="d-flex align-items-center p-3 bg-white shadow-sm rounded-4 mb-4 border">
+            <div class="me-3">
+                <div class="bg-primary text-white d-flex align-items-center justify-content-center rounded-circle fw-bold fs-4" style="width: 55px; height: 55px;">
+                    {{ pessoa.nome[0] | upper }}
+                </div>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">{{ pessoa.nome }} <span class="text-muted small fw-normal">(Auto)</span></h5>
+                <p class="text-muted small mb-0 fw-semibold">CPF: {{ pessoa.cpf or 'Auto-Cadastrado' }}</p>
+                <small class="text-muted d-block" style="font-size: 0.75rem;">Nascimento: {{ pessoa.nascimento or '-' }} | Tel: {{ pessoa.telefone or '-' }}</small>
+            </div>
+        </div>
+
+        <h4 class="fw-bold text-dark mb-3 px-1" style="font-size: 1.3rem;">Área de Auto-Declaração</h4>
+
+        <ul class="nav nav-pills nav-justified mb-3 p-1 bg-light rounded-3 border" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold py-2 rounded-3" id="pills-vacinas-tab" data-bs-toggle="pill" data-bs-target="#pills-vacinas" type="button" role="tab" aria-controls="pills-vacinas" aria-selected="true">
+                    Minhas Vacinas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold py-2 rounded-3" id="pills-medicamentos-tab" data-bs-toggle="pill" data-bs-target="#pills-medicamentos" type="button" role="tab" aria-controls="pills-medicamentos" aria-selected="false">
+                    Meus Medicamentos
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="pills-tabContent">
+            
+            <div class="tab-pane fade show active" id="pills-vacinas" role="tabpanel" aria-labelledby="pills-vacinas-tab">
+                <div class="card border-0 shadow-sm rounded-4 mb-4 border-top border-primary border-4">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-dark mb-3">Auto-Declaração de Vacina</h6>
+                        
+                        <form method="post" action="/pessoa/{{pessoa.id}}/vacina">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-secondary mb-1">Tipo de Vacina (ex: COVID-19)</label>
+                                <select class="form-select form-select-sm rounded-2" name="vacina_id" required>
+                                    <option value="">Selecione a vacina...</option>
+                                    {% for v in vacinas %}
+                                        <option value="{{v.id}}">{{v.nome}} {% if v.fabricante %}({{v.fabricante}}){% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="row g-2">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Dose (ex: 1ª, 2º, Reforço)</label>
+                                    <input class="form-control form-control-sm rounded-2" name="dose" placeholder="Ex: 1ª Dose" required>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Lote (Opcional)</label>
+                                    <input class="form-control form-control-sm rounded-2" name="lote" placeholder="Lote do frasco">
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-secondary mb-1">Data da Aplicação</label>
+                                <input class="form-control form-control-sm rounded-2" type="date" name="data_application" value="{{hoje}}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary mb-1">Observações / Sintomas</label>
+                                <textarea class="form-control form-control-sm rounded-2" name="observacao" rows="2" placeholder="Alguma reação ou detalhe extra..."></textarea>
+                            </div>
+
+                            <button class="btn btn-primary w-100 rounded-3 fw-bold py-2 shadow-sm mb-2">
+                                Adicionar Vacina ao Histórico
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-secondary mb-2 px-1">Gerenciar Auto-Declarações de Vacinas</h6>
+                {% for a in aplicacoes %}
+                    <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mb-2 border">
+                        <div>
+                            <span class="fw-bold text-dark d-block mb-1">{{ a.vacina }}</span>
+                            <small class="text-muted d-block">Dose: {{ a.dose }} | Data: {{ a.data_aplicacao }}</small>
+                            {% if a.lote %}<small class="badge bg-light text-secondary border">Lote: {{ a.lote }}</small>{% endif %}
+                        </div>
+                        <form method="post" action="/excluir/aplicacao/{{a.id}}">
+                            <button class="btn btn-sm btn-danger px-3 rounded-2 fw-bold">Remover</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="text-center p-3 text-muted bg-white rounded-3 border small">Nenhuma vacina auto-declarada ainda.</div>
+                {% endfor %}
+            </div>
+
+            <div class="tab-pane fade" id="pills-medicamentos" role="tabpanel" aria-labelledby="pills-medicamentos-tab">
+                <div class="card border-0 shadow-sm rounded-4 mb-4 border-top border-success border-4">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-dark mb-3">Auto-Declaração de Medicamento</h6>
+                        
+                        <form method="post" action="/pessoa/{{pessoa.id}}/medicacao">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-secondary mb-1">Nome do Medicamento</label>
+                                <select class="form-select form-select-sm rounded-2" name="medicamento_id" required>
+                                    <option value="">Selecione o medicamento...</option>
+                                    {% for m in medicamentos %}
+                                        <option value="{{m.id}}">{{m.nome}} {{m.apresentacao or ''}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-secondary mb-1">Frequência / Uso (ex: Contínuo, Temporário)</label>
+                                <input class="form-control form-control-sm rounded-2" name="posologia" placeholder="Ex: De 8h em 8h, uso contínuo" required>
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Data de Início</label>
+                                    <input class="form-control form-control-sm rounded-2" type="date" name="data_inicio">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Data Fim (Opcional)</label>
+                                    <input class="form-control form-control-sm rounded-2" type="date" name="data_fim">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary mb-1">Observações</label>
+                                <textarea class="form-control form-control-sm rounded-2" name="observacao" rows="2" placeholder="Dosagem exata ou recomendações médicas..."></textarea>
+                            </div>
+
+                            <button class="btn btn-success w-100 rounded-3 fw-bold
